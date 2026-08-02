@@ -70,7 +70,7 @@ export const useSensorStore = create((set, get) => ({
 
     if (maxGas > 300) {
       merged.servo3 = 0; // Gas detected -> Turn Gas Valve OFF (Cut Off)
-    } else if (!newMetrics.servo3 || newMetrics.servo3 === 0) {
+    } else {
       merged.servo3 = 90; // No gas detected -> Keep Gas Valve ON (Supply Open)
     }
 

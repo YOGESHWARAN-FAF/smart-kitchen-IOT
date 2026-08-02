@@ -151,9 +151,9 @@ export const Kitchen3DView = () => {
 
       const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
       const isGasDetected = maxGas > 300;
-      // Gas Valve is ON (Open / 90°) when NO gas detected, and OFF (Cut Off / 0°) when gas detected
-      const servo3Angle = isGasDetected ? 0 : (metrics.servo3 > 0 ? metrics.servo3 : 90);
-      const isRegulatorOpen = servo3Angle > 20;
+      // Gas Valve is ON (Supply Open / 90°) when NO gas detected, and OFF (Safety Cut Off / 0°) when gas detected
+      const isRegulatorOpen = !isGasDetected;
+      const servo3Angle = isRegulatorOpen ? 90 : 0;
 
       // LPG Cylinder Icon Body
       ctx.fillStyle = '#DC2626';
@@ -175,7 +175,7 @@ export const Kitchen3DView = () => {
 
       ctx.fillStyle = isRegulatorOpen ? '#10B981' : '#F43F5E';
       ctx.shadowColor = isRegulatorOpen ? '#10B981' : '#F43F5E';
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.arc(servo3X, servo3Y, isMobile ? 7.5 : 9, 0, Math.PI * 2);
       ctx.fill();
@@ -193,7 +193,7 @@ export const Kitchen3DView = () => {
       // Servo 3 Valve Badge Callout below (Shows ON / OPEN when no gas, OFF / CUT OFF when gas detected)
       const valveText = isMobile
         ? `VALVE: ${isRegulatorOpen ? 'ON (OPEN)' : 'OFF (CUT)'}`
-        : `VALVE: ${isRegulatorOpen ? 'ON (SUPPLY OPEN)' : 'OFF (SAFETY CUT OFF)'}`;
+        : `VALVE: ${isRegulatorOpen ? '90° (ON / SUPPLY OPEN)' : '0° (OFF / SAFETY CUT OFF)'}`;
       drawBadge(
         valveText,
         servo3X - 2,
