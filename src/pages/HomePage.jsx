@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { SummaryCards } from '../components/dashboard/SummaryCards';
 import { LiveThermalMap } from '../components/dashboard/LiveThermalMap';
 import { FourGasSensors } from '../components/dashboard/FourGasSensors';
@@ -13,55 +14,80 @@ import { SystemHealth } from '../components/dashboard/SystemHealth';
 import { AlertCenter } from '../components/dashboard/AlertCenter';
 import { AIChatbot } from '../components/dashboard/AIChatbot';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: 'easeOut' },
+  },
+};
+
 export const HomePage = () => {
   return (
-    <div className="space-y-8 pb-10">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6 sm:space-y-8 pb-10"
+    >
       {/* 1. Summary Metric Cards Row */}
-      <section>
+      <motion.section variants={itemVariants}>
         <SummaryCards />
-      </section>
+      </motion.section>
 
       {/* 2. 4 Gas Sensor Spectral Array */}
-      <section>
+      <motion.section variants={itemVariants}>
         <FourGasSensors />
-      </section>
+      </motion.section>
 
       {/* 3. AI Safety Panel (Featured Hero AI Card) */}
-      <section>
+      <motion.section variants={itemVariants}>
         <AISafetyPanel />
-      </section>
+      </motion.section>
 
       {/* 4. Live Thermal Heat Map & 3D Kitchen View Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <motion.section variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <LiveThermalMap />
         <Kitchen3DView />
-      </section>
+      </motion.section>
 
       {/* 5. Temperature & Humidity Thermal Color Maps */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <motion.section variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <TemperatureMap />
         <HumidityMap />
-      </section>
+      </motion.section>
 
       {/* 6. Live Recharts 24-Hour Telemetry */}
-      <section>
+      <motion.section variants={itemVariants}>
         <LiveCharts />
-      </section>
+      </motion.section>
 
       {/* 7. Solenoid Relay, Servo Fan Panel & System Health Row */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <motion.section variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <RelayPanel />
         <ServoPanel />
         <SystemHealth />
-      </section>
+      </motion.section>
 
       {/* 8. Alert Center Log */}
-      <section>
+      <motion.section variants={itemVariants}>
         <AlertCenter />
-      </section>
+      </motion.section>
 
       {/* Interactive Personalized AI Safety Chatbot */}
       <AIChatbot />
-    </div>
+    </motion.div>
   );
 };
+

@@ -51,11 +51,11 @@ export const HistoryPage = () => {
   };
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-6 sm:space-y-8 pb-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             SYSTEM SENSOR TELEMETRY LOGS & AUDIT
           </h1>
           <p className="text-xs text-slate-500 font-medium">
@@ -64,27 +64,28 @@ export const HistoryPage = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleGenerateAISummary}
             disabled={isGeneratingAiSummary}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-mono shadow-sm transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-mono shadow-sm transition-all"
           >
             <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
-            <span>{isGeneratingAiSummary ? 'Generating...' : 'AI Audit Summary'}</span>
+            <span>{isGeneratingAiSummary ? 'Generating...' : 'AI Audit'}</span>
           </button>
 
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs font-mono shadow-sm transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs font-mono shadow-sm transition-all"
           >
             <Download className="w-4 h-4" />
-            <span>Export CSV</span>
+            <span>CSV</span>
           </button>
 
           <button
             onClick={handlePrintPDF}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs font-mono hover:bg-slate-50 transition-all shadow-sm"
+            className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs font-mono hover:bg-slate-50 transition-all shadow-sm"
+            title="Print PDF Audit"
           >
             <Printer className="w-4 h-4" />
           </button>
@@ -106,16 +107,16 @@ export const HistoryPage = () => {
 
       {/* Search & Table Card */}
       <GlassCard className="space-y-4 bg-white border-slate-200">
-        <div className="flex items-center justify-between gap-4 pb-3 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-extrabold text-slate-900">
+            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
               LOGGED TELEMETRY FEED ({filteredHistory.length} ENTRIES)
             </h3>
           </div>
 
           {/* Search Box */}
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
             <input
               type="text"
@@ -129,7 +130,7 @@ export const HistoryPage = () => {
 
         {/* Data Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse font-mono text-xs">
+          <table className="w-full text-left border-collapse font-mono text-xs whitespace-nowrap">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold">
                 <th className="py-3 px-4">TIMESTAMP</th>
@@ -177,3 +178,4 @@ export const HistoryPage = () => {
     </div>
   );
 };
+
