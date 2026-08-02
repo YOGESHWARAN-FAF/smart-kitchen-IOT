@@ -8,7 +8,7 @@ export const ServoPanel = () => {
   const { metrics } = useSensorStore();
   const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
   const isGasDetected = maxGas > 300;
-  const servo3Angle = isGasDetected ? 0 : (metrics.servo3 > 0 ? metrics.servo3 : 90);
+  const servo3Angle = isGasDetected ? 90 : 0;
 
   const servos = [
     {
@@ -36,7 +36,7 @@ export const ServoPanel = () => {
       index: 3,
       icon: Flame,
       color: isGasDetected ? 'text-rose-600' : 'text-emerald-600',
-      statusText: isGasDetected ? 'OFF (0°)' : 'ON (90°)',
+      statusText: isGasDetected ? 'OFF (90°)' : 'ON (0°)',
     },
   ];
 

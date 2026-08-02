@@ -151,9 +151,9 @@ export const Kitchen3DView = () => {
 
       const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
       const isGasDetected = maxGas > 300;
-      // Gas Valve is ON (Supply Open / 90°) when NO gas detected, and OFF (Safety Cut Off / 0°) when gas detected
+      // Gas Valve is ON (Supply Open / 0°) when NO gas detected, and OFF (Safety Cut Off / 90°) when gas detected
       const isRegulatorOpen = !isGasDetected;
-      const servo3Angle = isRegulatorOpen ? 90 : 0;
+      const servo3Angle = isRegulatorOpen ? 0 : 90;
 
       // LPG Cylinder Icon Body
       ctx.fillStyle = '#DC2626';
@@ -169,7 +169,7 @@ export const Kitchen3DView = () => {
       ctx.textAlign = 'center';
       ctx.fillText('LPG', lpgX, lpgY + 2.5);
 
-      // Servo 3 Regulator Valve Body (Green ON when safe, Red OFF when gas leak)
+      // Servo 3 Regulator Valve Body (Green ON at 0° when safe, Red OFF at 90° when gas leak)
       const servo3X = lpgX + (isMobile ? 26 : 32);
       const servo3Y = lpgY;
 
@@ -190,10 +190,10 @@ export const Kitchen3DView = () => {
       ctx.lineTo(servo3X + Math.cos(rad3) * (isMobile ? 12 : 14), servo3Y + Math.sin(rad3) * (isMobile ? 12 : 14));
       ctx.stroke();
 
-      // Servo 3 Valve Badge Callout below (Shows ON / OPEN when no gas, OFF / CUT OFF when gas detected)
+      // Servo 3 Valve Badge Callout below (Shows 0° ON / OPEN when no gas, 90° OFF / CUT OFF when gas detected)
       const valveText = isMobile
-        ? `VALVE: ${isRegulatorOpen ? 'ON (OPEN)' : 'OFF (CUT)'}`
-        : `VALVE: ${isRegulatorOpen ? '90° (ON / SUPPLY OPEN)' : '0° (OFF / SAFETY CUT OFF)'}`;
+        ? `VALVE: ${isRegulatorOpen ? '0° (ON)' : '90° (OFF)'}`
+        : `VALVE: ${isRegulatorOpen ? '0° (ON / SUPPLY OPEN)' : '90° (OFF / SAFETY CUT OFF)'}`;
       drawBadge(
         valveText,
         servo3X - 2,
@@ -463,7 +463,7 @@ export const Kitchen3DView = () => {
             </span>
             <span className="flex items-center gap-1 text-amber-400">
               <Flame className="w-3 h-3" /> Gas Valve: <strong className={metrics.mq2 > 300 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
-                {metrics.mq2 > 300 ? 'OFF (0°)' : 'ON (90°)'}
+                {metrics.mq2 > 300 ? 'OFF (90°)' : 'ON (0°)'}
               </strong>
             </span>
           </div>
