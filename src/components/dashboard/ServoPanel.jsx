@@ -6,6 +6,9 @@ import { motion } from 'framer-motion';
 
 export const ServoPanel = () => {
   const { metrics } = useSensorStore();
+  const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
+  const isGasDetected = maxGas > 300;
+  const servo3Angle = isGasDetected ? 0 : (metrics.servo3 > 0 ? metrics.servo3 : 90);
 
   const servos = [
     {
@@ -15,6 +18,7 @@ export const ServoPanel = () => {
       index: 1,
       icon: Wind,
       color: 'text-emerald-700',
+      statusText: `${metrics.servo1 || 0}°`,
     },
     {
       name: 'Servo 2',
@@ -23,14 +27,16 @@ export const ServoPanel = () => {
       index: 2,
       icon: Wind,
       color: 'text-emerald-700',
+      statusText: `${metrics.servo2 || 0}°`,
     },
     {
       name: 'Servo 3',
       title: 'LPG Gas Regulator Valve',
-      angle: metrics.servo3 || 0,
+      angle: servo3Angle,
       index: 3,
       icon: Flame,
-      color: 'text-amber-700',
+      color: isGasDetected ? 'text-rose-600' : 'text-emerald-600',
+      statusText: isGasDetected ? 'OFF (0°)' : 'ON (90°)',
     },
   ];
 
@@ -65,8 +71,8 @@ export const ServoPanel = () => {
                   <h4 className="text-xs font-bold text-slate-900">{s.name}</h4>
                   <p className="text-[10px] text-slate-500 font-medium">{s.title}</p>
                 </div>
-                <span className="text-xs font-mono font-extrabold text-emerald-700">
-                  {s.angle}°
+                <span className={`text-xs font-mono font-extrabold ${s.index === 3 && isGasDetected ? 'text-rose-600' : 'text-emerald-700'}`}>
+                  {s.statusText}
                 </span>
               </div>
 
@@ -82,13 +88,13 @@ export const ServoPanel = () => {
 
               <div className="space-y-1">
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono font-bold">
-                  <span>0° (Closed)</span>
+                  <span>0° (Off)</span>
                   <span>{percentage}%</span>
-                  <span>180° (Open)</span>
+                  <span>180° (On)</span>
                 </div>
                 <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
                   <motion.div
-                    className="h-full bg-emerald-600 rounded-full"
+                    className={`h-full rounded-full ${s.index === 3 && isGasDetected ? 'bg-rose-500' : 'bg-emerald-600'}`}
                     animate={{ width: `${percentage}%` }}
                     transition={{ duration: 0.5 }}
                   />
@@ -101,3 +107,4 @@ export const ServoPanel = () => {
     </GlassCard>
   );
 };
+

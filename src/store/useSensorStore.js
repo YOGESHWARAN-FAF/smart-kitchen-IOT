@@ -15,7 +15,7 @@ export const useSensorStore = create((set, get) => ({
     manualRelay: 0,
     servo1: 45, // Exhaust Fan 1 Angle
     servo2: 90, // Damper 2 Angle
-    servo3: 15, // Window Vent 3 Angle
+    servo3: 90, // LPG Gas Regulator Valve: 90° = ON (Normal/No Gas), 0° = OFF (Gas Detected Cut Off)
     pirMotion: 1, // 1 = Motion Detected, 0 = No Motion
     leakDuration: 0, // Seconds gas has exceeded warning threshold
     lastUpdated: new Date().toISOString(),
@@ -33,7 +33,7 @@ export const useSensorStore = create((set, get) => ({
     detectedGasType: 'None (Clean Air)',
     recommendedActions: [
       'Kitchen environment is stable and optimal.',
-      'Solenoid safety valve is operating normally.',
+      'Solenoid safety valve is operating normally (Gas Supply ON).',
       'Routine ventilation auto-cycle active.'
     ],
     immediateAction: 'None required.',
@@ -59,6 +59,20 @@ export const useSensorStore = create((set, get) => ({
   updateMetrics: (newMetrics) => {
     const prevMetrics = get().metrics;
     const merged = { ...prevMetrics, ...newMetrics, lastUpdated: new Date().toISOString() };
+
+    // Auto-calculate Servo 3 (LPG Regulator Valve): ON (90°) when no gas, OFF (0°) when gas detected
+    const maxGas = Math.max(
+      Number(merged.mq2) || 0,
+      Number(merged.mq3) || 0,
+      Number(merged.mq4) || 0,
+      Number(merged.mq5) || 0
+    );
+
+    if (maxGas > 300) {
+      merged.servo3 = 0; // Gas detected -> Turn Gas Valve OFF (Cut Off)
+    } else if (!newMetrics.servo3 || newMetrics.servo3 === 0) {
+      merged.servo3 = 90; // No gas detected -> Keep Gas Valve ON (Supply Open)
+    }
 
     // Compute History Point
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -117,3 +131,4 @@ export const useSensorStore = create((set, get) => ({
 
   clearAlerts: () => set({ alerts: [] }),
 }));
+

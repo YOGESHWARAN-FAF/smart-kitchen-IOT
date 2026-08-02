@@ -145,10 +145,14 @@ export const Kitchen3DView = () => {
       ctx.strokeRect(islandX, islandY, islandW, islandH);
       drawBadge(isMobile ? 'PREP ISLAND' : 'CENTRAL PREP ISLAND', islandX + islandW / 2, islandY + islandH / 2, 'rgba(15, 23, 42, 0.95)', '#E2E8F0', 'center', fontSize);
 
-      // 3. LPG CYLINDER & SERVO 3 VALVE
+      // 3. LPG CYLINDER & SERVO 3 VALVE (ON = NO GAS, OFF = GAS DETECTED)
       const lpgX = stoveX + (isMobile ? 22 : 28);
       const lpgY = stoveY + stoveH / 2 + (isMobile ? 12 : 10);
-      const servo3Angle = metrics.servo3 || 0;
+
+      const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
+      const isGasDetected = maxGas > 300;
+      // Gas Valve is ON (Open / 90°) when NO gas detected, and OFF (Cut Off / 0°) when gas detected
+      const servo3Angle = isGasDetected ? 0 : (metrics.servo3 > 0 ? metrics.servo3 : 90);
       const isRegulatorOpen = servo3Angle > 20;
 
       // LPG Cylinder Icon Body
@@ -165,7 +169,7 @@ export const Kitchen3DView = () => {
       ctx.textAlign = 'center';
       ctx.fillText('LPG', lpgX, lpgY + 2.5);
 
-      // Servo 3 Regulator Valve Body
+      // Servo 3 Regulator Valve Body (Green ON when safe, Red OFF when gas leak)
       const servo3X = lpgX + (isMobile ? 26 : 32);
       const servo3Y = lpgY;
 
@@ -186,15 +190,15 @@ export const Kitchen3DView = () => {
       ctx.lineTo(servo3X + Math.cos(rad3) * (isMobile ? 12 : 14), servo3Y + Math.sin(rad3) * (isMobile ? 12 : 14));
       ctx.stroke();
 
-      // Servo 3 Valve Badge Callout below
+      // Servo 3 Valve Badge Callout below (Shows ON / OPEN when no gas, OFF / CUT OFF when gas detected)
       const valveText = isMobile
-        ? `VALVE: ${servo3Angle}° (${isRegulatorOpen ? 'OPEN' : 'OFF'})`
-        : `VALVE: ${servo3Angle}° (${isRegulatorOpen ? 'OPEN' : 'CUT OFF'})`;
+        ? `VALVE: ${isRegulatorOpen ? 'ON (OPEN)' : 'OFF (CUT)'}`
+        : `VALVE: ${isRegulatorOpen ? 'ON (SUPPLY OPEN)' : 'OFF (SAFETY CUT OFF)'}`;
       drawBadge(
         valveText,
         servo3X - 2,
         servo3Y + (isMobile ? 18 : 22),
-        isRegulatorOpen ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)',
+        isRegulatorOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)',
         isRegulatorOpen ? '#34D399' : '#FCA5A5',
         'center',
         fontSize
@@ -235,7 +239,7 @@ export const Kitchen3DView = () => {
         ctx.stroke();
       }
 
-      // Exhaust Fan Badge Callout below (Compact string on mobile to prevent collision with WIN 1)
+      // Exhaust Fan Badge Callout below
       const fanText = isMobile
         ? `FAN: ${isExhaustFanOn ? 'ON' : 'OFF'}`
         : `EXHAUST FAN: ${isExhaustFanOn ? 'ACTIVE (ON)' : 'STANDBY (OFF)'}`;
@@ -323,9 +327,6 @@ export const Kitchen3DView = () => {
       }
 
       // 8. DYNAMIC GAS DISPERSION PARTICLES & STREAMLINES
-      const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
-      const isHazard = maxGas > 300;
-
       if (viewMode === 'ALL' || viewMode === 'AIRFLOW' || viewMode === 'HAZARD') {
         particles.forEach((p) => {
           if (!p.x || Math.random() < 0.02) {
@@ -356,7 +357,7 @@ export const Kitchen3DView = () => {
           }
 
           const pGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-          if (isHazard) {
+          if (isGasDetected) {
             pGrad.addColorStop(0, 'rgba(244, 63, 94, 0.7)');
             pGrad.addColorStop(1, 'rgba(244, 63, 94, 0)');
           } else {
@@ -366,12 +367,12 @@ export const Kitchen3DView = () => {
 
           ctx.fillStyle = pGrad;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius * (isHazard ? 1.3 : 1), 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.radius * (isGasDetected ? 1.3 : 1), 0, Math.PI * 2);
           ctx.fill();
         });
 
         if (isExhaustFanOn || isOpenW1 || isOpenW2) {
-          ctx.strokeStyle = isHazard ? 'rgba(244, 63, 94, 0.5)' : 'rgba(56, 189, 248, 0.4)';
+          ctx.strokeStyle = isGasDetected ? 'rgba(244, 63, 94, 0.5)' : 'rgba(56, 189, 248, 0.4)';
           ctx.lineWidth = 1.5;
           ctx.setLineDash([4, 4]);
 
@@ -461,7 +462,9 @@ export const Kitchen3DView = () => {
               <Wind className="w-3 h-3" /> Win 1: <strong className="text-white">{metrics.servo1}°</strong> | Win 2: <strong className="text-white">{metrics.servo2}°</strong>
             </span>
             <span className="flex items-center gap-1 text-amber-400">
-              <Flame className="w-3 h-3" /> Gas Valve: <strong className="text-white">{metrics.servo3}°</strong>
+              <Flame className="w-3 h-3" /> Gas Valve: <strong className={metrics.mq2 > 300 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+                {metrics.mq2 > 300 ? 'OFF (0°)' : 'ON (90°)'}
+              </strong>
             </span>
           </div>
 
@@ -478,6 +481,3 @@ export const Kitchen3DView = () => {
     </GlassCard>
   );
 };
-
-
-
