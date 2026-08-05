@@ -16,7 +16,9 @@ export const LiveThermalMap = () => {
     let particleOffset = 0;
 
     const render = () => {
-      const width = (canvas.width = canvas.parentElement.clientWidth || 500);
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const width = (canvas.width = parent.clientWidth || 500);
       const height = (canvas.height = 290);
 
       // Clean Light Background
@@ -47,10 +49,10 @@ export const LiveThermalMap = () => {
       const mq5Intensity = Math.min(metrics.mq5 / 800, 1.0);
 
       const sources = [
-        { x: width * 0.25, y: height * 0.35, intensity: mq2Intensity, label: `MQ2: ${metrics.mq2} PPM` },
-        { x: width * 0.75, y: height * 0.35, intensity: mq3Intensity, label: `MQ3: ${metrics.mq3} PPM` },
-        { x: width * 0.35, y: height * 0.75, intensity: mq4Intensity, label: `MQ4: ${metrics.mq4} PPM` },
-        { x: width * 0.65, y: height * 0.75, intensity: mq5Intensity, label: `MQ5: ${metrics.mq5} PPM` },
+        { x: width * 0.25, y: height * 0.35, intensity: mq2Intensity, label: `MQ4 #1 (Stove): ${metrics.mq2} PPM` },
+        { x: width * 0.75, y: height * 0.35, intensity: mq3Intensity, label: `MQ4 #2 (Cylinder): ${metrics.mq3} PPM` },
+        { x: width * 0.35, y: height * 0.75, intensity: mq4Intensity, label: `MQ4 #3 (Ceiling): ${metrics.mq4} PPM` },
+        { x: width * 0.65, y: height * 0.75, intensity: mq5Intensity, label: `MQ4 #4 (Wall): ${metrics.mq5} PPM` },
       ];
 
       particleOffset += 0.03;

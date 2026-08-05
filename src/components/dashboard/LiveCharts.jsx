@@ -59,7 +59,7 @@ export const LiveCharts = () => {
         {/* Tab Buttons */}
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-mono">
           {[
-            { id: 'gases', label: 'Gas Array (MQ2-5)' },
+            { id: 'gases', label: '4 MQ-4 LPG Array' },
             { id: 'environment', label: 'Temp & Humidity' },
             { id: 'safety', label: 'AI Safety Score' },
           ].map((tab) => (
@@ -87,10 +87,10 @@ export const LiveCharts = () => {
               <YAxis stroke="#64748B" fontSize={10} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
-              <Line type="monotone" dataKey="mq2" name="MQ2 (LPG)" stroke="#EF4444" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="mq3" name="MQ3 (Alcohol)" stroke="#F59E0B" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="mq4" name="MQ4 (Methane)" stroke="#06B6D4" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="mq5" name="MQ5 (Hydrogen)" stroke="#10B981" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="mq2" name="MQ-4 #1 (Stove LPG)" stroke="#EF4444" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="mq3" name="MQ-4 #2 (Cylinder LPG)" stroke="#F59E0B" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="mq4" name="MQ-4 #3 (Ceiling LPG)" stroke="#06B6D4" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="mq5" name="MQ-4 #4 (Wall LPG)" stroke="#10B981" strokeWidth={2} dot={false} />
             </LineChart>
           ) : activeTab === 'environment' ? (
             <AreaChart data={history}>

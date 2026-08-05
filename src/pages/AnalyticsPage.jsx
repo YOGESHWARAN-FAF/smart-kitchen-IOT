@@ -141,7 +141,7 @@ export const AnalyticsPage = () => {
                 }}
               />
               <Legend verticalAlign="top" height={36} wrapperStyle={{ fontFamily: 'JetBrains Mono' }} />
-              <Bar dataKey="mq2Avg" name="Mean MQ2 Gas (PPM)" fill="#059669" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="mq2Avg" name="Mean MQ-4 LPG Gas (PPM)" fill="#059669" radius={[6, 6, 0, 0]} />
               <Bar dataKey="score" name="Safety Index" fill="#10B981" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

@@ -20,7 +20,7 @@ import { formatDate, formatTime } from '../../services/helpers';
 export const Header = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
   const [now, setNow] = useState(new Date());
   const { systemHealth } = useSensorStore();
-  const { soundAlerts, toggleSoundAlerts } = useSettingsStore();
+  const { soundAlerts, toggleSoundAlerts, isMuted, toggleMute } = useSettingsStore();
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -107,17 +107,27 @@ export const Header = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
               <span className="text-[11px] text-slate-800 font-bold">ESP32</span>
             </div>
 
-            {/* Audio Alert Toggle */}
+            {/* Audio Alert Siren Mute Button */}
             <button
-              onClick={toggleSoundAlerts}
-              className={`p-1.5 sm:p-2 rounded-xl border transition-all shrink-0 ${
-                soundAlerts
-                  ? 'bg-rose-100 border-rose-300 text-rose-700'
-                  : 'bg-slate-100 border-slate-200 text-slate-600 hover:text-slate-900'
+              onClick={toggleMute}
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-mono text-xs font-bold transition-all shrink-0 ${
+                isMuted
+                  ? 'bg-rose-100 text-rose-800 border-rose-300 shadow-sm'
+                  : 'bg-emerald-100 text-emerald-800 border-emerald-300 shadow-sm animate-pulse'
               }`}
-              title="Toggle Sound Alerts"
+              title={isMuted ? 'Alarm Siren Muted - Click to Unmute' : 'Alarm Siren Active - Click to Mute'}
             >
-              {soundAlerts ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {isMuted ? (
+                <>
+                  <VolumeX className="w-4 h-4 text-rose-600" />
+                  <span>MUTED</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4 text-emerald-600 animate-bounce" />
+                  <span>ALARM ON</span>
+                </>
+              )}
             </button>
           </div>
         </div>

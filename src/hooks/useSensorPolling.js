@@ -3,6 +3,7 @@ import { useSensorStore } from '../store/useSensorStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { fetchThingSpeakData, fetchThingSpeakHistory } from '../services/thingspeak';
 import { analyzeSafetyWithGroq } from '../services/groq';
+import { startContinuousAlarm, stopContinuousAlarm } from '../services/alarmSound';
 import toast from 'react-hot-toast';
 
 // Global singleton flag to guarantee strictly ONCE toast notification per hazard occurrence
@@ -25,6 +26,8 @@ export const useSensorPolling = () => {
     thingSpeakReadKey2,
     groqApiKey,
     refreshInterval,
+    soundAlerts,
+    isMuted,
   } = useSettingsStore();
 
   const isInitialMount = useRef(true);
@@ -49,14 +52,29 @@ export const useSensorPolling = () => {
       if (res.data) {
         setAiAnalysis(res.data);
 
+        const maxLpg = Math.max(
+          Number(currentMetrics.mq2) || 0,
+          Number(currentMetrics.mq3) || 0,
+          Number(currentMetrics.mq4) || 0,
+          Number(currentMetrics.mq5) || 0
+        );
+
         const isHazard =
-          res.data.emergencyLevel === 'EMERGENCY' || res.data.emergencyLevel === 'CRITICAL';
+          res.data.emergencyLevel === 'EMERGENCY' ||
+          res.data.emergencyLevel === 'CRITICAL' ||
+          res.data.emergencyLevel === 'WARNING' ||
+          maxLpg > 300;
 
         if (isHazard) {
+          // Play continuous siren alarm if soundAlerts is enabled
+          if (soundAlerts !== false) {
+            startContinuousAlarm();
+          }
+
           // Fire toast strictly ONCE per hazard occurrence with fixed toast ID
           if (!hasFiredHazardToast) {
             hasFiredHazardToast = true;
-            toast.error(`⚠️ ${res.data.immediateAction}`, {
+            toast.error(`⚠️ ${res.data.immediateAction || 'LPG Gas Leak Detected on MQ-4 Array!'}`, {
               id: 'critical-gas-hazard-toast', // Guarantees single toast instance
               duration: 8000,
               position: 'top-right',
@@ -69,11 +87,14 @@ export const useSensorPolling = () => {
           }
 
           addAlert({
-            title: `CRITICAL SENSOR ALARM: ${res.data.detectedGasType}`,
-            message: res.data.reasoning,
+            title: `CRITICAL LPG SENSOR ALARM: ${res.data.detectedGasType || 'LPG Gas Leak'}`,
+            message: res.data.reasoning || `LPG concentration recorded at ${maxLpg} PPM on MQ-4 sensor array!`,
             type: 'critical',
           });
         } else {
+          // Stop continuous alarm siren when environment returns to safe
+          stopContinuousAlarm();
+
           // Reset single-toast flag & dismiss toast when environment returns to safe
           if (hasFiredHazardToast) {
             hasFiredHazardToast = false;
@@ -83,7 +104,7 @@ export const useSensorPolling = () => {
       }
       setAiAnalyzing(false);
     },
-    [groqApiKey, setAiAnalysis, setAiAnalyzing, addAlert]
+    [groqApiKey, soundAlerts, setAiAnalysis, setAiAnalyzing, addAlert]
   );
 
   // Main Polling Loop Function (Decoupled from metrics state to prevent re-trigger loop)

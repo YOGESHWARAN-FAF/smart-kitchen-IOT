@@ -6,37 +6,40 @@ import { motion } from 'framer-motion';
 
 export const ServoPanel = () => {
   const { metrics } = useSensorStore();
-  const maxGas = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
-  const isGasDetected = maxGas > 300;
+  const maxLpg = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
+  const isGasDetected = maxLpg > 300;
+
+  const servo1Angle = isGasDetected ? 90 : (metrics.servo1 || 45);
+  const servo2Angle = isGasDetected ? 90 : (metrics.servo2 || 45);
   const servo3Angle = isGasDetected ? 90 : 0;
 
   const servos = [
     {
-      name: 'Servo 1',
+      name: 'Servo 1 (W1)',
       title: 'Window 1 Vent Louvre',
-      angle: metrics.servo1 || 0,
+      angle: servo1Angle,
       index: 1,
       icon: Wind,
-      color: 'text-emerald-700',
-      statusText: `${metrics.servo1 || 0}°`,
+      color: isGasDetected ? 'text-amber-600' : 'text-emerald-700',
+      statusText: `${servo1Angle}° ${isGasDetected ? '(VENT OPEN)' : '(NORMAL)'}`,
     },
     {
-      name: 'Servo 2',
+      name: 'Servo 2 (W2)',
       title: 'Window 2 Vent Louvre',
-      angle: metrics.servo2 || 0,
+      angle: servo2Angle,
       index: 2,
       icon: Wind,
-      color: 'text-emerald-700',
-      statusText: `${metrics.servo2 || 0}°`,
+      color: isGasDetected ? 'text-amber-600' : 'text-emerald-700',
+      statusText: `${servo2Angle}° ${isGasDetected ? '(VENT OPEN)' : '(NORMAL)'}`,
     },
     {
-      name: 'Servo 3',
+      name: 'Servo 3 (Gas Valve)',
       title: 'LPG Gas Regulator Valve',
       angle: servo3Angle,
       index: 3,
       icon: Flame,
       color: isGasDetected ? 'text-rose-600' : 'text-emerald-600',
-      statusText: isGasDetected ? 'OFF (90°)' : 'ON (0°)',
+      statusText: isGasDetected ? 'OFF (90° CUT-OFF)' : 'ON (0° OPEN)',
     },
   ];
 

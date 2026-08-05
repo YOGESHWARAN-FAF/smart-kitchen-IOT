@@ -26,7 +26,7 @@ export const RelayPanel = () => {
             <h3 className="text-sm font-extrabold tracking-tight text-slate-900">
               KITCHEN EXHAUST FAN RELAY
             </h3>
-            <p className="text-[11px] text-slate-500 font-medium">Automatic Exhaust Fan Output</p>
+            <p className="text-[11px] text-slate-500 font-medium">Auto-Interlocked with 4 MQ-4 LPG Sensors</p>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export const RelayPanel = () => {
             {isExhaustActive ? 'EXHAUST FAN ACTIVE (ON)' : 'EXHAUST FAN IDLE (OFF)'}
           </div>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            ThingSpeak Field 7 Relay State
+            ThingSpeak Field 7 Relay Output
           </p>
         </div>
       </div>
@@ -73,7 +73,7 @@ export const RelayPanel = () => {
       <div className="pt-3 border-t border-slate-200 text-center">
         <span className="text-[11px] font-mono text-slate-600 font-bold flex items-center justify-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-emerald-600" />
-          Autonomous Hardware Interlock
+          Autonomous 4 MQ-4 LPG Interlock
         </span>
       </div>
     </GlassCard>

@@ -3,21 +3,21 @@ import { useSettingsStore } from './useSettingsStore';
 import { writeThingSpeakRelay } from '../services/thingspeak';
 
 export const useSensorStore = create((set, get) => ({
-  // Current Live Metrics
+  // Current Live Metrics (4 MQ-4 LPG Sensors + Environment & Actuators)
   metrics: {
-    mq2: 120, // LPG, Smoke, Propane
-    mq3: 85,  // Alcohol, Ethanol
-    mq4: 110, // Methane, Natural Gas
-    mq5: 95,  // Hydrogen, Town Gas
+    mq2: 120, // Field 1: MQ-4 LPG Sensor #1 (Zone 1 - Main Stove)
+    mq3: 85,  // Field 2: MQ-4 LPG Sensor #2 (Zone 2 - Cylinder Line)
+    mq4: 110, // Field 3: MQ-4 LPG Sensor #3 (Zone 3 - Ceiling Exhaust)
+    mq5: 95,  // Field 4: MQ-4 LPG Sensor #4 (Zone 4 - Wall Ventilation)
     temperature: 24.5,
     humidity: 52.0,
-    relayStatus: 0, // 0 = Valve Open/Normal, 1 = Cutoff Engaged / Emergency
+    relayStatus: 0, // Field 7: Exhaust Fan Relay (0 = IDLE, 1 = RUNNING / Active Exhaust)
     manualRelay: 0,
-    servo1: 45, // Exhaust Fan 1 Angle
-    servo2: 90, // Damper 2 Angle
-    servo3: 0, // LPG Gas Regulator Valve: 0° = ON (Normal/Supply Open), 90° = OFF (Gas Detected Cut Off)
-    pirMotion: 1, // 1 = Motion Detected, 0 = No Motion
-    leakDuration: 0, // Seconds gas has exceeded warning threshold
+    servo1: 45, // Servo 1: Window 1 (W1) Louvre Angle (0°-180°)
+    servo2: 45, // Servo 2: Window 2 (W2) Louvre Angle (0°-180°)
+    servo3: 0, // Servo 3: LPG Gas Regulator Valve (0° = ON / Supply Open, 90° = OFF / Safety Cut-Off)
+    pirMotion: 1, // 1 = Occupant Motion Detected, 0 = Empty Kitchen
+    leakDuration: 0, // Seconds LPG concentration has exceeded warning threshold
     lastUpdated: new Date().toISOString(),
   },
 
@@ -29,16 +29,16 @@ export const useSensorStore = create((set, get) => ({
     emergencyLevel: 'NORMAL', // NORMAL, WARNING, CRITICAL, EMERGENCY
     safetyScore: 98, // 0 - 100
     safeToEnter: true,
-    riskCategory: 'Low Risk',
+    riskCategory: 'Optimal Safety',
     detectedGasType: 'None (Clean Air)',
     recommendedActions: [
       'Kitchen environment is stable and optimal.',
-      'Solenoid safety valve is operating normally (Gas Supply ON at 0°).',
+      'Solenoid safety valve is operating normally (LPG Gas Supply ON at 0°).',
       'Routine ventilation auto-cycle active.'
     ],
     immediateAction: 'None required.',
     confidence: '99%',
-    reasoning: 'All 4 gas sensors (MQ2-MQ5) remain well below hazard thresholds. Thermal and humidity levels match ambient room standards.',
+    reasoning: 'All 4 MQ-4 LPG gas sensors (Field 1-4) remain well below hazard thresholds. Thermal and humidity levels match ambient standards.',
     isAnalyzing: false,
     lastAnalyzed: null,
   },
@@ -60,18 +60,22 @@ export const useSensorStore = create((set, get) => ({
     const prevMetrics = get().metrics;
     const merged = { ...prevMetrics, ...newMetrics, lastUpdated: new Date().toISOString() };
 
-    // Auto-calculate Servo 3 (LPG Regulator Valve): ON (0°) when no gas, OFF (90°) when gas detected
-    const maxGas = Math.max(
+    // 4 MQ-4 LPG Sensors max reading evaluation
+    const maxLpgGas = Math.max(
       Number(merged.mq2) || 0,
       Number(merged.mq3) || 0,
       Number(merged.mq4) || 0,
       Number(merged.mq5) || 0
     );
 
-    if (maxGas > 300) {
-      merged.servo3 = 90; // Gas detected -> Turn Gas Valve OFF (Cut Off at 90°)
+    // Auto-actuation interlock logic for 3 Servos & Relay Fan when LPG is detected
+    if (maxLpgGas > 300) {
+      merged.servo3 = 90; // LPG Detected -> Turn Gas Valve OFF (Cut-Off at 90°)
+      merged.servo1 = 90; // Open Window 1 (W1) for emergency LPG exhaust
+      merged.servo2 = 90; // Open Window 2 (W2) for emergency LPG exhaust
+      merged.relayStatus = 1; // Engage Exhaust Fan Relay (RUNNING)
     } else {
-      merged.servo3 = 0; // No gas detected -> Keep Gas Valve ON (Supply Open at 0°)
+      merged.servo3 = 0; // Safe -> Keep Gas Valve ON (Supply Open at 0°)
     }
 
     // Compute History Point

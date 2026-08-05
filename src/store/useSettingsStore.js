@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { setAlarmMuted } from '../services/alarmSound';
 
 export const useSettingsStore = create(
   persist(
@@ -17,7 +18,8 @@ export const useSettingsStore = create(
       // App Settings
       refreshInterval: 15,
       simulationMode: false,
-      soundAlerts: false,
+      soundAlerts: true,
+      isMuted: false,
 
       // Sensor Emergency Thresholds
       thresholds: {
@@ -45,6 +47,17 @@ export const useSettingsStore = create(
         set((state) => ({ simulationMode: !state.simulationMode })),
       toggleSoundAlerts: () =>
         set((state) => ({ soundAlerts: !state.soundAlerts })),
+      toggleMute: () =>
+        set((state) => {
+          const nextMuted = !state.isMuted;
+          setAlarmMuted(nextMuted);
+          return { isMuted: nextMuted };
+        }),
+      setMuted: (muted) =>
+        set(() => {
+          setAlarmMuted(muted);
+          return { isMuted: muted };
+        }),
       resetDefaults: () =>
         set({
           thingSpeakChannel1: '3441914',
@@ -55,7 +68,8 @@ export const useSettingsStore = create(
           groqApiKey: import.meta.env.VITE_GROQ_API_KEY || '',
           refreshInterval: 15,
           simulationMode: false,
-          soundAlerts: false,
+          soundAlerts: true,
+          isMuted: false,
         }),
     }),
     {

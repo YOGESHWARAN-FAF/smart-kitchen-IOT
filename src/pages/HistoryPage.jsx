@@ -134,10 +134,10 @@ export const HistoryPage = () => {
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold">
                 <th className="py-3 px-4">TIMESTAMP</th>
-                <th className="py-3 px-4">MQ2 (LPG)</th>
-                <th className="py-3 px-4">MQ3 (ALCOHOL)</th>
-                <th className="py-3 px-4">MQ4 (METHANE)</th>
-                <th className="py-3 px-4">MQ5 (TOWN GAS)</th>
+                <th className="py-3 px-4">MQ-4 #1 (STOVE LPG)</th>
+                <th className="py-3 px-4">MQ-4 #2 (CYLINDER LPG)</th>
+                <th className="py-3 px-4">MQ-4 #3 (CEILING LPG)</th>
+                <th className="py-3 px-4">MQ-4 #4 (WALL LPG)</th>
                 <th className="py-3 px-4">TEMP (°C)</th>
                 <th className="py-3 px-4">HUMIDITY (%)</th>
                 <th className="py-3 px-4">SAFETY SCORE</th>

@@ -2,86 +2,122 @@ import React from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { CircularGauge } from '../ui/CircularGauge';
 import { useSensorStore } from '../../store/useSensorStore';
-import { Flame, Wind, Zap, Activity } from 'lucide-react';
+import { Flame, Fan, Sliders, ShieldAlert } from 'lucide-react';
 import { getGasColor } from '../../services/helpers';
 
 export const FourGasSensors = () => {
   const { metrics } = useSensorStore();
 
-  const mq2Info = getGasColor(metrics.mq2, 300, 600);
-  const mq3Info = getGasColor(metrics.mq3, 250, 500);
-  const mq4Info = getGasColor(metrics.mq4, 300, 650);
-  const mq5Info = getGasColor(metrics.mq5, 280, 550);
+  const isRelayFanActive = metrics.relayStatus === 1 || metrics.manualRelay === 1;
+  const isGasDetected = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5) > 300;
+
+  const f1Info = getGasColor(metrics.mq2, 300, 600);
+  const f2Info = getGasColor(metrics.mq3, 300, 600);
+  const f3Info = getGasColor(metrics.mq4, 300, 600);
+  const f4Info = getGasColor(metrics.mq5, 300, 600);
 
   const sensors = [
     {
-      title: 'MQ2 Sensor',
-      subtitle: 'LPG / Smoke / Propane',
+      fieldId: 'Field 1',
+      title: 'MQ-4 Sensor #1',
+      subtitle: 'Zone 1: Stove Range LPG',
       value: metrics.mq2,
       max: 1000,
       unit: 'PPM',
-      status: mq2Info.status,
-      color: mq2Info.hex,
-      gradientId: 'mq2Grad',
+      status: f1Info.status,
+      color: f1Info.hex,
+      gradientId: 'mq4_1Grad',
       icon: Flame,
     },
     {
-      title: 'MQ3 Sensor',
-      subtitle: 'Alcohol Vapors & Ethanol',
+      fieldId: 'Field 2',
+      title: 'MQ-4 Sensor #2',
+      subtitle: 'Zone 2: Cylinder Line LPG',
       value: metrics.mq3,
       max: 1000,
       unit: 'PPM',
-      status: mq3Info.status,
-      color: mq3Info.hex,
-      gradientId: 'mq3Grad',
-      icon: Wind,
+      status: f2Info.status,
+      color: f2Info.hex,
+      gradientId: 'mq4_2Grad',
+      icon: Flame,
     },
     {
-      title: 'MQ4 Sensor',
-      subtitle: 'Methane / Natural Gas',
+      fieldId: 'Field 3',
+      title: 'MQ-4 Sensor #3',
+      subtitle: 'Zone 3: Ceiling Exhaust LPG',
       value: metrics.mq4,
       max: 1000,
       unit: 'PPM',
-      status: mq4Info.status,
-      color: mq4Info.hex,
-      gradientId: 'mq4Grad',
-      icon: Zap,
+      status: f3Info.status,
+      color: f3Info.hex,
+      gradientId: 'mq4_3Grad',
+      icon: Flame,
     },
     {
-      title: 'MQ5 Sensor',
-      subtitle: 'Hydrogen & Town Gas',
+      fieldId: 'Field 4',
+      title: 'MQ-4 Sensor #4',
+      subtitle: 'Zone 4: Wall Vent LPG',
       value: metrics.mq5,
       max: 1000,
       unit: 'PPM',
-      status: mq5Info.status,
-      color: mq5Info.hex,
-      gradientId: 'mq5Grad',
-      icon: Activity,
+      status: f4Info.status,
+      color: f4Info.hex,
+      gradientId: 'mq4_4Grad',
+      icon: Flame,
     },
   ];
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between px-1">
+      {/* Header bar with global Relay Fan status */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-1 gap-2">
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-2.5 rounded-full bg-emerald-600 animate-ping" />
           <h3 className="text-base font-extrabold tracking-tight text-slate-900">
-            4-GAS SPECTRAL ARRAY VISUALIZER
+            4 MQ-4 LPG SENSOR ARRAY VISUALIZER
           </h3>
         </div>
-        <span className="text-xs font-mono font-bold text-slate-500">
-          Real-time Multi-Gas Sensor Array
-        </span>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+          <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold ${
+            isRelayFanActive
+              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+              : 'bg-slate-100 text-slate-600 border-slate-200'
+          }`}>
+            <Fan className={`w-3.5 h-3.5 ${isRelayFanActive ? 'animate-spin text-emerald-600' : ''}`} />
+            RELAY FAN: {isRelayFanActive ? 'RUNNING (ON)' : 'IDLE (OFF)'}
+          </span>
+
+          <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold ${
+            isGasDetected
+              ? 'bg-rose-100 text-rose-800 border-rose-300'
+              : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+          }`}>
+            <Sliders className="w-3.5 h-3.5" />
+            GAS VALVE: {isGasDetected ? 'OFF (90° CUT-OFF)' : 'ON (0° OPEN)'}
+          </span>
+        </div>
       </div>
 
+      {/* 4 Sensor Field Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {sensors.map((s, idx) => (
           <GlassCard
             key={idx}
             glow={s.status === 'CRITICAL' ? 'rose' : s.status === 'WARNING' ? 'amber' : null}
-            className="h-full flex flex-col justify-between bg-white border-slate-200"
+            className="h-full flex flex-col justify-between bg-white border-slate-200 p-4"
           >
             <CircularGauge {...s} />
+
+            {/* Respected Field Relay Fan & Servo Status Badge */}
+            <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-[10px] font-mono text-slate-600">
+              <span className="font-bold text-slate-500">{s.fieldId}</span>
+              <span className={`font-bold px-2 py-0.5 rounded ${
+                isRelayFanActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+              }`}>
+                Fan: {isRelayFanActive ? 'RUNNING' : 'IDLE'}
+              </span>
+            </div>
           </GlassCard>
         ))}
       </div>

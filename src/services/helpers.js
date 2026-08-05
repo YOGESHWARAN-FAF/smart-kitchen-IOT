@@ -2,6 +2,32 @@
  * Utility helper functions for AURA-GUARD Smart Kitchen Dashboard
  */
 
+// Web Audio API emergency buzzer tone generator
+export const playAlarmSound = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // 880Hz A5 warning tone
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.4);
+
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (e) {
+    console.warn('Audio alarm playback error:', e);
+  }
+};
+
 // Gas concentration category color mapping
 export const getGasColor = (value, warningThreshold = 300, criticalThreshold = 600) => {
   if (value >= criticalThreshold) {

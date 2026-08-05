@@ -49,7 +49,7 @@ export const CircularGauge = ({
 
       {/* SVG Circular Arc */}
       <div className="relative flex items-center justify-center my-3">
-        <svg className="w-44 h-44 transform -rotate-135" viewBox="0 0 170 170">
+        <svg className="w-44 h-44 transform -rotate-[135deg]" viewBox="0 0 170 170">
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#10B981" />

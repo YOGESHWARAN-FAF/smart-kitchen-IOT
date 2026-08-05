@@ -105,7 +105,7 @@ export const SettingsPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-mono font-bold text-slate-700">Channel 1 ID (7 Fields)</label>
+              <label className="text-xs font-mono font-bold text-slate-700">Channel 1 ID (Fields 1-4: 4 MQ-4 LPG Sensors, F5 Temp, F6 Hum, F7 Relay Fan)</label>
               <input
                 type="text"
                 value={formData.thingSpeakChannel1}

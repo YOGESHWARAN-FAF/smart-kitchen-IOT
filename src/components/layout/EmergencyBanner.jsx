@@ -1,16 +1,21 @@
 import React from 'react';
 import { useSensorStore } from '../../store/useSensorStore';
-import { AlertTriangle, ShieldAlert, Activity } from 'lucide-react';
+import { useSettingsStore } from '../../store/useSettingsStore';
+import { AlertTriangle, ShieldAlert, Activity, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const EmergencyBanner = () => {
   const { aiAnalysis, metrics } = useSensorStore();
+  const { isMuted, toggleMute } = useSettingsStore();
 
   const isEmergency =
     aiAnalysis.emergencyLevel === 'EMERGENCY' ||
     aiAnalysis.emergencyLevel === 'CRITICAL' ||
-    metrics.mq2 > 500 ||
-    metrics.mq4 > 500;
+    aiAnalysis.emergencyLevel === 'WARNING' ||
+    metrics.mq2 > 300 ||
+    metrics.mq3 > 300 ||
+    metrics.mq4 > 300 ||
+    metrics.mq5 > 300;
 
   if (!isEmergency) return null;
 
@@ -36,18 +41,32 @@ export const EmergencyBanner = () => {
                   CRITICAL HAZARD
                 </span>
                 <h3 className="text-base font-extrabold text-white">
-                  {aiAnalysis.detectedGasType} DETECTED
+                  {aiAnalysis.detectedGasType || 'LPG GAS LEAK'} DETECTED
                 </h3>
               </div>
               <p className="text-xs text-rose-200 mt-1 font-medium">
-                {aiAnalysis.immediateAction || 'Gas concentrations exceed safe explosive thresholds! Autonomous safety systems active.'}
+                {aiAnalysis.immediateAction || 'Gas concentrations exceed safe thresholds! Autonomous safety cut-off valve active.'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-900/60 border border-rose-500/40 text-xs font-mono text-rose-200">
-            <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-            <span>AUTONOMOUS SAFETY INTERLOCK</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleMute}
+              className={`px-3.5 py-1.5 rounded-xl border flex items-center gap-2 text-xs font-mono font-bold transition-all ${
+                isMuted
+                  ? 'bg-rose-900/80 text-rose-200 border-rose-400'
+                  : 'bg-yellow-400 text-slate-950 border-yellow-300 shadow-lg animate-bounce'
+              }`}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4 text-rose-300" /> : <Volume2 className="w-4 h-4 text-slate-950" />}
+              <span>{isMuted ? 'BUZZER MUTED' : 'MUTE BUZZER ALARM'}</span>
+            </button>
+
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-900/60 border border-rose-500/40 text-xs font-mono text-rose-200">
+              <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+              <span>AUTONOMOUS INTERLOCK</span>
+            </div>
           </div>
         </div>
       </motion.div>

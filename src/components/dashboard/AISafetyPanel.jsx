@@ -1,6 +1,7 @@
 import React from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { useSensorStore } from '../../store/useSensorStore';
+import { useSettingsStore } from '../../store/useSettingsStore';
 import {
   Sparkles,
   ShieldCheck,
@@ -12,14 +13,19 @@ import {
   UserCheck,
   AlertTriangle,
   Flame,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 export const AISafetyPanel = () => {
   const { aiAnalysis, metrics } = useSensorStore();
+  const { isMuted, toggleMute } = useSettingsStore();
 
   const isOccupantPresent = metrics.pirMotion === 1;
   const isEmergency =
-    aiAnalysis.emergencyLevel === 'EMERGENCY' || aiAnalysis.emergencyLevel === 'CRITICAL';
+    aiAnalysis.emergencyLevel === 'EMERGENCY' ||
+    aiAnalysis.emergencyLevel === 'CRITICAL' ||
+    aiAnalysis.emergencyLevel === 'WARNING';
 
   return (
     <GlassCard className="p-6 space-y-6 relative overflow-hidden border-slate-200 shadow-sm">
@@ -44,12 +50,26 @@ export const AISafetyPanel = () => {
           </div>
         </div>
 
-        {/* PIR Occupancy Status Badge */}
-        <div className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-bold ${
-          isOccupantPresent ? 'badge-yellow' : 'badge-green'
-        }`}>
-          {isOccupantPresent ? <AlertTriangle className="w-4 h-4 text-amber-800 animate-bounce" /> : <UserCheck className="w-4 h-4 text-emerald-700" />}
-          <span>PIR OCCUPANCY: {isOccupantPresent ? 'PERSON DETECTED IN KITCHEN' : 'Kitchen Empty'}</span>
+        {/* Action Controls & PIR Occupancy */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleMute}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-bold border transition-all ${
+              isMuted
+                ? 'bg-rose-100 text-rose-800 border-rose-300'
+                : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+            }`}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-rose-600" /> : <Volume2 className="w-4 h-4 text-emerald-600" />}
+            <span>{isMuted ? 'BUZZER MUTED' : 'MUTE BUZZER'}</span>
+          </button>
+
+          <div className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-bold ${
+            isOccupantPresent ? 'badge-yellow' : 'badge-green'
+          }`}>
+            {isOccupantPresent ? <AlertTriangle className="w-4 h-4 text-amber-800 animate-bounce" /> : <UserCheck className="w-4 h-4 text-emerald-700" />}
+            <span>PIR: {isOccupantPresent ? 'PERSON IN KITCHEN' : 'Empty Kitchen'}</span>
+          </div>
         </div>
       </div>
 
@@ -117,7 +137,7 @@ export const AISafetyPanel = () => {
               {aiAnalysis.detectedGasType}
             </span>
           </div>
-          <span className="text-[11px] font-mono text-slate-500">4-Sensor Array</span>
+          <span className="text-[11px] font-mono text-slate-500">4 MQ-4 LPG Sensors</span>
         </div>
       </div>
 

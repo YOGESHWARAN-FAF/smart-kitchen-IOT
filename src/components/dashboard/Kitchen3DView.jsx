@@ -20,6 +20,9 @@ export const Kitchen3DView = () => {
   const { metrics } = useSensorStore();
   const [viewMode, setViewMode] = useState('ALL'); // 'ALL' | 'AIRFLOW' | 'HAZARD' | 'ACTUATORS'
 
+  const maxGas = Math.max(metrics.mq2 || 0, metrics.mq3 || 0, metrics.mq4 || 0, metrics.mq5 || 0);
+  const isGasDetected = maxGas > 300;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -459,18 +462,18 @@ export const Kitchen3DView = () => {
         <div className="absolute bottom-2 left-2 right-2 bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono shadow-lg">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <span className="flex items-center gap-1 text-cyan-400">
-              <Wind className="w-3 h-3" /> Win 1: <strong className="text-white">{metrics.servo1}°</strong> | Win 2: <strong className="text-white">{metrics.servo2}°</strong>
+              <Wind className="w-3 h-3" /> Win 1 (W1): <strong className="text-white">{isGasDetected ? 90 : (metrics.servo1 || 45)}°</strong> | Win 2 (W2): <strong className="text-white">{isGasDetected ? 90 : (metrics.servo2 || 45)}°</strong>
             </span>
             <span className="flex items-center gap-1 text-amber-400">
-              <Flame className="w-3 h-3" /> Gas Valve: <strong className={metrics.mq2 > 300 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
-                {metrics.mq2 > 300 ? 'OFF (90°)' : 'ON (0°)'}
+              <Flame className="w-3 h-3" /> Gas Valve: <strong className={isGasDetected ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+                {isGasDetected ? 'OFF (90° CUT-OFF)' : 'ON (0° OPEN)'}
               </strong>
             </span>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
             <span className="flex items-center gap-1 text-emerald-400">
-              <Fan className="w-3 h-3 animate-spin" /> Fan Relay: <strong className="text-white">{metrics.relayStatus === 1 ? 'ON' : 'OFF'}</strong>
+              <Fan className="w-3 h-3 animate-spin" /> Fan Relay: <strong className="text-white">{metrics.relayStatus === 1 || isGasDetected ? 'RUNNING' : 'OFF'}</strong>
             </span>
             <span className="flex items-center gap-1 text-purple-400">
               <User className="w-3 h-3" /> Occupant: <strong className="text-white">{metrics.pirMotion === 1 ? 'DETECTED' : 'CLEAR'}</strong>

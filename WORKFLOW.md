@@ -57,8 +57,8 @@
 
 ### 1. IoT Hardware Data Ingestion (ESP32 ➔ ThingSpeak REST API)
 - The physical **ESP32 microcontroller** samples physical sensors every 15 seconds:
-  - **Channel 1 (ID: `3441914`)**: Field 1 (`MQ1/2`), Field 2 (`MQ2/3`), Field 3 (`MQ3`), Field 4 (`MQ4`), Field 5 (`Temp`), Field 6 (`Humidity`), Field 7 (`Exhaust Fan Relay Status`), Field 8 (`Manual Relay Control`).
-  - **Channel 2 (ID: `3441916`)**: Field 1 (`Servo 1 - Window 1`), Field 2 (`Servo 2 - Window 2`), Field 3 (`Servo 3 - LPG Gas Regulator`), Field 4 (`PIR Motion Occupancy`).
+  - **Channel 1 (ID: `3441914`)**: Field 1 (`MQ-4 Sensor 1 - Stove`), Field 2 (`MQ-4 Sensor 2 - Cylinder`), Field 3 (`MQ-4 Sensor 3 - Ceiling`), Field 4 (`MQ-4 Sensor 4 - Wall`), Field 5 (`Temp`), Field 6 (`Humidity`), Field 7 (`Exhaust Fan Relay Status`), Field 8 (`Manual Relay Control`).
+  - **Channel 2 (ID: `3441916`)**: Field 1 (`Servo 1 - Window 1 W1`), Field 2 (`Servo 2 - Window 2 W2`), Field 3 (`Servo 3 - LPG Gas Regulator Valve`), Field 4 (`PIR Motion Occupancy`).
 - ESP32 writes sensor telemetry payloads to ThingSpeak REST endpoints using HTTP GET/POST.
 
 ### 2. Client-Side REST Polling Engine (`src/hooks/useSensorPolling.js`)
