@@ -14,13 +14,47 @@ import {
   Zap,
   Menu,
   X,
+  Bell,
+  BellRing,
+  BellOff,
 } from 'lucide-react';
 import { formatDate, formatTime } from '../../services/helpers';
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendTestNotification,
+} from '../../services/browserNotification';
+import toast from 'react-hot-toast';
 
 export const Header = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
   const [now, setNow] = useState(new Date());
+  const [notifPermission, setNotifPermission] = useState('default');
   const { systemHealth } = useSensorStore();
   const { soundAlerts, toggleSoundAlerts, isMuted, toggleMute } = useSettingsStore();
+
+  useEffect(() => {
+    setNotifPermission(getNotificationPermission());
+  }, []);
+
+  const handleNotificationClick = async () => {
+    if (notifPermission === 'default') {
+      const res = await requestNotificationPermission();
+      setNotifPermission(res.permission);
+      if (res.permission === 'granted') {
+        toast.success('Mobile & Browser notifications enabled!');
+        sendTestNotification();
+      } else if (res.permission === 'denied') {
+        toast.error('Notifications blocked in browser settings.');
+      }
+    } else if (notifPermission === 'granted') {
+      sendTestNotification();
+      toast.success('Test alert & vibration sent! Check device.');
+    } else if (notifPermission === 'denied') {
+      toast.error('Notifications are blocked in your browser settings. Please permit notifications for this site.');
+    } else {
+      toast('Notifications are not supported on this browser.');
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -106,6 +140,43 @@ export const Header = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
               <Cpu className="w-3.5 h-3.5 text-emerald-600" />
               <span className="text-[11px] text-slate-800 font-bold">ESP32</span>
             </div>
+
+            {/* Mobile Browser Push Notification Button */}
+            <button
+              onClick={handleNotificationClick}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-mono text-xs font-bold transition-all shrink-0 ${
+                notifPermission === 'granted'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 shadow-sm'
+                  : notifPermission === 'denied'
+                  ? 'bg-slate-100 text-slate-500 border-slate-300'
+                  : 'bg-amber-100 text-amber-900 border-amber-300 shadow-sm animate-pulse hover:bg-amber-200'
+              }`}
+              title={
+                notifPermission === 'granted'
+                  ? 'Mobile Notifications Enabled - Click to test alert'
+                  : notifPermission === 'denied'
+                  ? 'Notifications Blocked in Browser - Click for info'
+                  : 'Click to Enable Mobile Browser Notifications & Vibration'
+              }
+            >
+              {notifPermission === 'granted' ? (
+                <>
+                  <BellRing className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">ALERTS ON</span>
+                  <span className="sm:hidden">ALERTS</span>
+                </>
+              ) : notifPermission === 'denied' ? (
+                <>
+                  <BellOff className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="hidden sm:inline">MUTED</span>
+                </>
+              ) : (
+                <>
+                  <Bell className="w-3.5 h-3.5 text-amber-700 animate-bounce" />
+                  <span>ENABLE ALERTS</span>
+                </>
+              )}
+            </button>
 
             {/* Audio Alert Siren Mute Button */}
             <button

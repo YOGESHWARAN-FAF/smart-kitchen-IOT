@@ -45,7 +45,8 @@ export const fetchThingSpeakData = async (config) => {
       }
     }
 
-    // Extract metrics based on prompt field mapping
+    // Extract ONLY raw sensor metrics from Channel 1 and Channel 2
+    // (Actuators: Servos & Relay Fan are controlled by internal application safety interlocks)
     const metrics = {
       mq2: Number(feed1.field1) || 0,
       mq3: Number(feed1.field2) || 0,
@@ -53,12 +54,8 @@ export const fetchThingSpeakData = async (config) => {
       mq5: Number(feed1.field4) || 0,
       temperature: Number(feed1.field5) || 0,
       humidity: Number(feed1.field6) || 0,
-      relayStatus: Number(feed1.field7) || 0,
-      manualRelay: Number(feed1.field8) || 0,
 
-      servo1: Number(feed2.field1) || 0,
-      servo2: Number(feed2.field2) || 0,
-      servo3: Number(feed2.field3) || 0,
+      // Channel 2: Field 4 is MOTION (PIR sensor)
       pirMotion: Number(feed2.field4) || 0,
       
       createdAt: feed1.created_at || new Date().toISOString(),
@@ -90,18 +87,24 @@ export const fetchThingSpeakHistory = async (channelId, readKey = '', results = 
     if (res.data && res.data.feeds) {
       return res.data.feeds.map((feed) => {
         const time = new Date(feed.created_at);
+        const mq2 = Number(feed.field1) || 0;
+        const mq3 = Number(feed.field2) || 0;
+        const mq4 = Number(feed.field3) || 0;
+        const mq5 = Number(feed.field4) || 0;
+        const isGasHazard = Math.max(mq2, mq3, mq4, mq5) > 300;
+
         return {
           timestamp: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
           fullTime: feed.created_at,
-          mq2: Number(feed.field1) || 0,
-          mq3: Number(feed.field2) || 0,
-          mq4: Number(feed.field3) || 0,
-          mq5: Number(feed.field4) || 0,
+          mq2,
+          mq3,
+          mq4,
+          mq5,
           temperature: Number(feed.field5) || 0,
           humidity: Number(feed.field6) || 0,
-          relayStatus: Number(feed.field7) || 0,
-          pirMotion: Number(feed.field8) || 0,
-          safetyScore: 95,
+          relayStatus: isGasHazard ? 1 : 0,
+          pirMotion: 0,
+          safetyScore: isGasHazard ? 30 : 95,
         };
       });
     }

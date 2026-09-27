@@ -9,9 +9,9 @@ export const ServoPanel = () => {
   const maxLpg = Math.max(metrics.mq2, metrics.mq3, metrics.mq4, metrics.mq5);
   const isGasDetected = maxLpg > 300;
 
-  const servo1Angle = isGasDetected ? 90 : (metrics.servo1 || 45);
-  const servo2Angle = isGasDetected ? 90 : (metrics.servo2 || 45);
-  const servo3Angle = isGasDetected ? 90 : 0;
+  const servo1Angle = metrics.servo1 !== undefined ? metrics.servo1 : (isGasDetected ? 90 : 0);
+  const servo2Angle = metrics.servo2 !== undefined ? metrics.servo2 : (isGasDetected ? 90 : 0);
+  const servo3Angle = metrics.servo3 !== undefined ? metrics.servo3 : (isGasDetected ? 90 : 0);
 
   const servos = [
     {
@@ -21,7 +21,9 @@ export const ServoPanel = () => {
       index: 1,
       icon: Wind,
       color: isGasDetected ? 'text-amber-600' : 'text-emerald-700',
-      statusText: `${servo1Angle}° ${isGasDetected ? '(VENT OPEN)' : '(NORMAL)'}`,
+      statusText: `${servo1Angle}° ${isGasDetected ? '(VENT OPEN)' : '(CLOSED / NORMAL)'}`,
+      minLabel: '0° (Closed)',
+      maxLabel: '90° (Open)',
     },
     {
       name: 'Servo 2 (W2)',
@@ -30,7 +32,9 @@ export const ServoPanel = () => {
       index: 2,
       icon: Wind,
       color: isGasDetected ? 'text-amber-600' : 'text-emerald-700',
-      statusText: `${servo2Angle}° ${isGasDetected ? '(VENT OPEN)' : '(NORMAL)'}`,
+      statusText: `${servo2Angle}° ${isGasDetected ? '(VENT OPEN)' : '(CLOSED / NORMAL)'}`,
+      minLabel: '0° (Closed)',
+      maxLabel: '90° (Open)',
     },
     {
       name: 'Servo 3 (Gas Valve)',
@@ -40,6 +44,8 @@ export const ServoPanel = () => {
       icon: Flame,
       color: isGasDetected ? 'text-rose-600' : 'text-emerald-600',
       statusText: isGasDetected ? 'OFF (90° CUT-OFF)' : 'ON (0° OPEN)',
+      minLabel: '0° (Supply ON)',
+      maxLabel: '90° (Cut-Off)',
     },
   ];
 
@@ -91,9 +97,9 @@ export const ServoPanel = () => {
 
               <div className="space-y-1">
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono font-bold">
-                  <span>0° (Off)</span>
+                  <span>{s.minLabel || '0°'}</span>
                   <span>{percentage}%</span>
-                  <span>180° (On)</span>
+                  <span>{s.maxLabel || '90°'}</span>
                 </div>
                 <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
                   <motion.div

@@ -7,12 +7,12 @@ import axios from 'axios';
 
 const DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
-// Models in order of preference
+// Active free Groq models in order of preference
 const GROQ_MODELS = [
-  'llama-3.1-8b-instant',
-  'gemma2-9b-it',
-  'llama-3.3-70b-versatile',
-  'mixtral-8x7b-32768',
+  'openai/gpt-oss-20b',
+  'qwen/qwen3.8-27b',
+  'openai/gpt-oss-120b',
+  'allam-2-7b',
 ];
 
 export const analyzeSafetyWithGroq = async (sensorData, apiKey) => {

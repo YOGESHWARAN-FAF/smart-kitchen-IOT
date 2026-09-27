@@ -11,10 +11,10 @@ export const useSensorStore = create((set, get) => ({
     mq5: 95,  // Field 4: MQ-4 LPG Sensor #4 (Zone 4 - Wall Ventilation)
     temperature: 24.5,
     humidity: 52.0,
-    relayStatus: 0, // Field 7: Exhaust Fan Relay (0 = IDLE, 1 = RUNNING / Active Exhaust)
+    relayStatus: 0, // Exhaust Fan Relay (0 = IDLE, 1 = RUNNING / Active Exhaust)
     manualRelay: 0,
-    servo1: 45, // Servo 1: Window 1 (W1) Louvre Angle (0°-180°)
-    servo2: 45, // Servo 2: Window 2 (W2) Louvre Angle (0°-180°)
+    servo1: 0, // Servo 1: Window 1 (W1) Vent Louvre (0° = CLOSED, 90° = OPEN)
+    servo2: 0, // Servo 2: Window 2 (W2) Vent Louvre (0° = CLOSED, 90° = OPEN)
     servo3: 0, // Servo 3: LPG Gas Regulator Valve (0° = ON / Supply Open, 90° = OFF / Safety Cut-Off)
     pirMotion: 1, // 1 = Occupant Motion Detected, 0 = Empty Kitchen
     leakDuration: 0, // Seconds LPG concentration has exceeded warning threshold
@@ -68,14 +68,22 @@ export const useSensorStore = create((set, get) => ({
       Number(merged.mq5) || 0
     );
 
-    // Auto-actuation interlock logic for 3 Servos & Relay Fan when LPG is detected
-    if (maxLpgGas > 300) {
-      merged.servo3 = 90; // LPG Detected -> Turn Gas Valve OFF (Cut-Off at 90°)
+    const warningThreshold = useSettingsStore.getState()?.thresholds?.mq2Warning || 300;
+    const isGasDetected = maxLpgGas > warningThreshold;
+
+    // Application safety interlock:
+    // When gas is detected: open both windows (90°), cut off gas valve (90°), turn on exhaust fan (1)
+    // When no gas is detected: close windows (0°), keep gas valve supply open (0°), turn off exhaust fan (0)
+    if (isGasDetected) {
       merged.servo1 = 90; // Open Window 1 (W1) for emergency LPG exhaust
       merged.servo2 = 90; // Open Window 2 (W2) for emergency LPG exhaust
+      merged.servo3 = 90; // LPG Detected -> Turn Gas Valve OFF (Cut-Off at 90°)
       merged.relayStatus = 1; // Engage Exhaust Fan Relay (RUNNING)
     } else {
+      merged.servo1 = 0; // Safe -> Keep Window 1 Closed (0°)
+      merged.servo2 = 0; // Safe -> Keep Window 2 Closed (0°)
       merged.servo3 = 0; // Safe -> Keep Gas Valve ON (Supply Open at 0°)
+      merged.relayStatus = 0; // Safe -> Exhaust Fan OFF (IDLE)
     }
 
     // Compute History Point

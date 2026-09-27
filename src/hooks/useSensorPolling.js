@@ -4,6 +4,7 @@ import { useSettingsStore } from '../store/useSettingsStore';
 import { fetchThingSpeakData, fetchThingSpeakHistory } from '../services/thingspeak';
 import { analyzeSafetyWithGroq } from '../services/groq';
 import { startContinuousAlarm, stopContinuousAlarm } from '../services/alarmSound';
+import { showGasLeakNotification, stopMobileHaptic } from '../services/browserNotification';
 import toast from 'react-hot-toast';
 
 // Global singleton flag to guarantee strictly ONCE toast notification per hazard occurrence
@@ -71,6 +72,13 @@ export const useSensorPolling = () => {
             startContinuousAlarm();
           }
 
+          // Trigger Mobile Browser Push Notification and Device Vibration
+          showGasLeakNotification({
+            maxGas: maxLpg,
+            immediateAction: res.data.immediateAction,
+            detectedGasType: res.data.detectedGasType,
+          });
+
           // Fire toast strictly ONCE per hazard occurrence with fixed toast ID
           if (!hasFiredHazardToast) {
             hasFiredHazardToast = true;
@@ -94,6 +102,7 @@ export const useSensorPolling = () => {
         } else {
           // Stop continuous alarm siren when environment returns to safe
           stopContinuousAlarm();
+          stopMobileHaptic();
 
           // Reset single-toast flag & dismiss toast when environment returns to safe
           if (hasFiredHazardToast) {

@@ -79,7 +79,7 @@ export const SummaryCards = () => {
     {
       title: 'Exhaust Fan Relay',
       value: metrics.relayStatus === 1 ? 'RUNNING (ON)' : 'IDLE (OFF)',
-      subtitle: 'Field 7 Relay Control',
+      subtitle: 'Auto-Interlocked Fan',
       icon: Power,
       color: metrics.relayStatus === 1 ? 'text-emerald-700' : 'text-slate-700',
       iconBg: metrics.relayStatus === 1 ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200',

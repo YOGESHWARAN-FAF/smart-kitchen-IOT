@@ -65,7 +65,7 @@ export const RelayPanel = () => {
             {isExhaustActive ? 'EXHAUST FAN ACTIVE (ON)' : 'EXHAUST FAN IDLE (OFF)'}
           </div>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            ThingSpeak Field 7 Relay Output
+            Application Gas Interlock (Active when Gas Detected)
           </p>
         </div>
       </div>

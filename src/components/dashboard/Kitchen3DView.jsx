@@ -219,7 +219,7 @@ export const Kitchen3DView = () => {
       // 4. RELAY EXHAUST FAN (North Wall Center)
       const exhaustX = width / 2;
       const exhaustY = wallMargin;
-      const isExhaustFanOn = metrics.relayStatus === 1 || metrics.manualRelay === 1;
+      const isExhaustFanOn = metrics.relayStatus === 1;
 
       ctx.fillStyle = isExhaustFanOn ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.2)';
       ctx.strokeStyle = isExhaustFanOn ? '#10B981' : '#F43F5E';
@@ -259,7 +259,7 @@ export const Kitchen3DView = () => {
       // 5. SERVO 1: NORTH WINDOW (Top Right Corner Wall)
       const window1X = wallMargin + wallW - (isMobile ? 45 : 70);
       const window1Y = wallMargin;
-      const servo1Angle = metrics.servo1 || 0;
+      const servo1Angle = metrics.servo1 !== undefined ? metrics.servo1 : (isGasDetected ? 90 : 0);
       const isOpenW1 = servo1Angle > 30;
 
       ctx.fillStyle = isOpenW1 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(71, 85, 105, 0.8)';
@@ -282,7 +282,7 @@ export const Kitchen3DView = () => {
       // 6. SERVO 2: EAST WINDOW (Right Wall)
       const window2X = wallMargin + wallW;
       const window2Y = Math.min(220, height * (isMobile ? 0.52 : 0.45));
-      const servo2Angle = metrics.servo2 || 0;
+      const servo2Angle = metrics.servo2 !== undefined ? metrics.servo2 : (isGasDetected ? 90 : 0);
       const isOpenW2 = servo2Angle > 30;
 
       ctx.fillStyle = isOpenW2 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(71, 85, 105, 0.8)';
@@ -462,18 +462,18 @@ export const Kitchen3DView = () => {
         <div className="absolute bottom-2 left-2 right-2 bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono shadow-lg">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <span className="flex items-center gap-1 text-cyan-400">
-              <Wind className="w-3 h-3" /> Win 1 (W1): <strong className="text-white">{isGasDetected ? 90 : (metrics.servo1 || 45)}°</strong> | Win 2 (W2): <strong className="text-white">{isGasDetected ? 90 : (metrics.servo2 || 45)}°</strong>
+              <Wind className="w-3 h-3" /> Win 1 (W1): <strong className="text-white">{metrics.servo1 !== undefined ? metrics.servo1 : (isGasDetected ? 90 : 0)}°</strong> | Win 2 (W2): <strong className="text-white">{metrics.servo2 !== undefined ? metrics.servo2 : (isGasDetected ? 90 : 0)}°</strong>
             </span>
             <span className="flex items-center gap-1 text-amber-400">
-              <Flame className="w-3 h-3" /> Gas Valve: <strong className={isGasDetected ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
-                {isGasDetected ? 'OFF (90° CUT-OFF)' : 'ON (0° OPEN)'}
+              <Flame className="w-3 h-3" /> Gas Valve: <strong className={isGasDetected || metrics.servo3 === 90 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+                {isGasDetected || metrics.servo3 === 90 ? 'OFF (90° CUT-OFF)' : 'ON (0° OPEN)'}
               </strong>
             </span>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
             <span className="flex items-center gap-1 text-emerald-400">
-              <Fan className="w-3 h-3 animate-spin" /> Fan Relay: <strong className="text-white">{metrics.relayStatus === 1 || isGasDetected ? 'RUNNING' : 'OFF'}</strong>
+              <Fan className={`w-3 h-3 ${metrics.relayStatus === 1 ? 'animate-spin text-emerald-400' : 'text-slate-500'}`} /> Fan Relay: <strong className="text-white">{metrics.relayStatus === 1 ? 'RUNNING' : 'OFF'}</strong>
             </span>
             <span className="flex items-center gap-1 text-purple-400">
               <User className="w-3 h-3" /> Occupant: <strong className="text-white">{metrics.pirMotion === 1 ? 'DETECTED' : 'CLEAR'}</strong>

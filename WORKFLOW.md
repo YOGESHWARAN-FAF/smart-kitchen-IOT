@@ -21,20 +21,28 @@
 ┌──────────────────────────────┐
 │ ThingSpeak REST API Cloud    │
 │ • Channel 1 (3441914): Gases │
-│ • Channel 2 (3441916): Servos│
+│ • Channel 2 (3441916): Motion│
 └──────────────┬───────────────┘
                │ HTTP GET / REST Polling (15s Timer)
                ▼
 ┌──────────────────────────────┐
 │ React Sensor Polling Hook    │ (`src/hooks/useSensorPolling.js`)
-│ • Fetches live channel feeds │
-│ • Validates sensor bounds    │
+│ • Fetches raw sensor streams │
+│ • Actuators managed by app   │
 └──────────────┬───────────────┘
                │ Updates State
                ▼
 ┌──────────────────────────────┐
 │ Zustand Central Store        │ (`src/store/useSensorStore.js`)
-│ • Holds current metrics      │
+│ • Autonomous Safety Interlock│
+│   Gas > 300 PPM:             │
+│   -> Windows 1 & 2 OPEN (90°)│
+│   -> Gas Valve CUT-OFF (90°) │
+│   -> Exhaust Fan ON (1)      │
+│   No Gas (<= 300 PPM):       │
+│   -> Windows CLOSED (0°)     │
+│   -> Gas Valve SUPPLY ON (0°)│
+│   -> Exhaust Fan OFF (0)     │
 │ • Appends 24-hr history log  │
 └──────┬───────────────┬───────┘
        │               │
@@ -57,29 +65,33 @@
 
 ### 1. IoT Hardware Data Ingestion (ESP32 ➔ ThingSpeak REST API)
 - The physical **ESP32 microcontroller** samples physical sensors every 15 seconds:
-  - **Channel 1 (ID: `3441914`)**: Field 1 (`MQ-4 Sensor 1 - Stove`), Field 2 (`MQ-4 Sensor 2 - Cylinder`), Field 3 (`MQ-4 Sensor 3 - Ceiling`), Field 4 (`MQ-4 Sensor 4 - Wall`), Field 5 (`Temp`), Field 6 (`Humidity`), Field 7 (`Exhaust Fan Relay Status`), Field 8 (`Manual Relay Control`).
-  - **Channel 2 (ID: `3441916`)**: Field 1 (`Servo 1 - Window 1 W1`), Field 2 (`Servo 2 - Window 2 W2`), Field 3 (`Servo 3 - LPG Gas Regulator Valve`), Field 4 (`PIR Motion Occupancy`).
+  - **Channel 1 (ID: `3441914`)**: Field 1 (`MQ-4 Sensor 1 - Stove`), Field 2 (`MQ-4 Sensor 2 - Cylinder`), Field 3 (`MQ-4 Sensor 3 - Ceiling`), Field 4 (`MQ-4 Sensor 4 - Wall`), Field 5 (`Temp`), Field 6 (`Humidity`).
+  - **Channel 2 (ID: `3441916`)**: Field 4 (`PIR Motion Occupancy`).
+  *(Note: Fields 1-3 on Channel 2 and Fields 7-8 on Channel 1 are ignored by the dashboard; servos and exhaust fan are driven directly by dashboard logic).*
 - ESP32 writes sensor telemetry payloads to ThingSpeak REST endpoints using HTTP GET/POST.
 
 ### 2. Client-Side REST Polling Engine (`src/hooks/useSensorPolling.js`)
 - The custom React hook `useSensorPolling` runs a non-blocking `setInterval` timer every **15 seconds** (decoupled from component re-renders).
-- Executes async parallel REST HTTP requests:
-  - `fetchThingSpeakChannel1(channelId, readKey)`
-  - `fetchThingSpeakChannel2(channelId, readKey)`
+- Executes async parallel REST HTTP requests via `fetchThingSpeakData`:
+  - Retrieves sensor metrics only (gases, temp, humidity, motion).
 - Parses raw string fields into structured floating-point telemetry values.
 
-### 3. State Management & History Database (`src/store/useSensorStore.js`)
+### 3. State Management & Autonomous Safety Interlocks (`src/store/useSensorStore.js`)
 - Received live metrics update the global Zustand state `metrics`.
+- **Application Safety Interlock Engine**:
+  - Automatically evaluates: `isGasDetected = max(mq2, mq3, mq4, mq5) > warningThreshold (300 PPM)`.
+  - **When Gas Detected**: Windows 1 & 2 open (`90°`), LPG regulator valve cuts off (`90°`), Exhaust Fan Relay engages (`1` / RUNNING).
+  - **When No Gas Detected**: Windows 1 & 2 close (`0°`), LPG regulator valve remains open (`0°`), Exhaust Fan Relay disengages (`0` / IDLE).
 - Concurrently appends a timestamped data point to `history` (buffer capped at 120 historical entries for optimal browser memory performance).
 - Evaluates single-fire notification guards (`hasFiredHazardToast`) so emergency toast alerts fire **strictly ONCE** per hazard occurrence.
 
 ### 4. Autonomous Groq LLM Diagnostic Engine (`src/services/groq.js`)
 - The dashboard automatically dispatches telemetry payloads to the **Groq Cloud REST API** (`https://api.groq.com/openai/v1/chat/completions`).
 - **Multi-Model Fallback Sequence**:
-  1. `llama-3.1-8b-instant` (500,000 Tokens Per Day capacity)
-  2. `gemma2-9b-it`
-  3. `llama-3.3-70b-versatile`
-  4. `mixtral-8x7b-32768`
+  1. `openai/gpt-oss-20b` (Ultra-fast, unrestricted free model)
+  2. `qwen/qwen3.8-27b` (High capability structured JSON engine)
+  3. `openai/gpt-oss-120b` (Advanced reasoning & fallback)
+  4. `allam-2-7b` (Auxiliary fallback)
 - **PIR Motion Occupancy Processing**:
   - When `pirMotion === 1`, the prompt instructs the LLM: *"A person is detected in the kitchen. Provide personalized occupant safety instructions."*
 - Returns structured JSON containing:
